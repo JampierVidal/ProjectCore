@@ -15,6 +15,7 @@ namespace ProjectCore.DAL.Models
         {
         }
 
+        public virtual DbSet<Activities> Activities { get; set; }
         public virtual DbSet<Artifacts> Artifacts { get; set; }
         public virtual DbSet<AspNetRoleClaims> AspNetRoleClaims { get; set; }
         public virtual DbSet<AspNetRoles> AspNetRoles { get; set; }
@@ -25,8 +26,11 @@ namespace ProjectCore.DAL.Models
         public virtual DbSet<AspNetUserTokens> AspNetUserTokens { get; set; }
         public virtual DbSet<Enrollment> Enrollment { get; set; }
         public virtual DbSet<Members> Members { get; set; }
+        public virtual DbSet<Priorities> Priorities { get; set; }
         public virtual DbSet<Projects> Projects { get; set; }
+        public virtual DbSet<States> States { get; set; }
         public virtual DbSet<Student> Student { get; set; }
+        public virtual DbSet<Tasks> Tasks { get; set; }
         public virtual DbSet<Tenants> Tenants { get; set; }
         public virtual DbSet<UserProjects> UserProjects { get; set; }
 
@@ -41,6 +45,13 @@ namespace ProjectCore.DAL.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Activities>(entity =>
+            {
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Artifacts>(entity =>
             {
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime");
@@ -147,6 +158,8 @@ namespace ProjectCore.DAL.Models
 
                 entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
 
+                entity.Property(e => e.TenantId).HasDefaultValueSql("((1))");
+
                 entity.Property(e => e.UserName).HasMaxLength(256);
 
                 entity.HasOne(d => d.Tenant)
@@ -207,6 +220,13 @@ namespace ProjectCore.DAL.Models
                     .HasConstraintName("FK__Members__UserId__4222D4EF");
             });
 
+            modelBuilder.Entity<Priorities>(entity =>
+            {
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Projects>(entity =>
             {
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime");
@@ -229,6 +249,13 @@ namespace ProjectCore.DAL.Models
                     .HasConstraintName("FK_Projects_Tenants");
             });
 
+            modelBuilder.Entity<States>(entity =>
+            {
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Student>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnName("ID");
@@ -242,6 +269,39 @@ namespace ProjectCore.DAL.Models
                 entity.Property(e => e.LastName)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Tasks>(entity =>
+            {
+                entity.Property(e => e.Details)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ExpirationDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Title)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Activity)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(d => d.ActivityId)
+                    .HasConstraintName("FK_Tasks_Activities");
+
+                entity.HasOne(d => d.Priority)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(d => d.PriorityId)
+                    .HasConstraintName("FK_Tasks_Priorities");
+
+                entity.HasOne(d => d.Project)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(d => d.ProjectId)
+                    .HasConstraintName("FK_Tasks_Projects");
+
+                entity.HasOne(d => d.State)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(d => d.StateId)
+                    .HasConstraintName("FK_Tasks_States");
             });
 
             modelBuilder.Entity<Tenants>(entity =>
